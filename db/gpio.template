@@ -1,0 +1,30 @@
+# GPIO template: per-pin direction, output, input
+# Macros:
+#   P     PV prefix (e.g. ESP:)
+#   PORT  asyn port
+#   N     GPIO number
+
+record(bo, "$(P)gpio$(N):dir") {
+    field(DESC, "GPIO$(N) direction (0=in,1=out)")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto pin_mode($(N)) $(PORT)")
+    field(ZNAM, "IN")
+    field(ONAM, "OUT")
+}
+
+record(bo, "$(P)gpio$(N):out") {
+    field(DESC, "GPIO$(N) output level")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto bo($(N)) $(PORT)")
+    field(ZNAM, "LOW")
+    field(ONAM, "HIGH")
+}
+
+record(bi, "$(P)gpio$(N):in") {
+    field(DESC, "GPIO$(N) input level")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto bi($(N)) $(PORT)")
+    field(SCAN, "Passive")
+    field(ZNAM, "LOW")
+    field(ONAM, "HIGH")
+}
