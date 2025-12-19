@@ -84,6 +84,7 @@ jobs:
           # asyn's vxi11 support includes <rpc/rpc.h>, so we must add that include path and link libtirpc.
           cat >"${ASYN}/configure/CONFIG_SITE.local" <<'EOF'
           USR_CPPFLAGS += -I/usr/include/tirpc
+          SYS_LIBS += tirpc
           USR_LDLIBS += -ltirpc
           EOF
 
