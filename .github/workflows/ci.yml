@@ -40,6 +40,7 @@ jobs:
             ca-certificates \
             curl \
             git \
+            libtirpc-dev \
             libreadline-dev \
             perl \
             python3 \
@@ -78,6 +79,13 @@ jobs:
             echo "Fetching asyn ${ASYN_VERSION}"
             git clone --depth 1 --branch "${ASYN_VERSION}" https://github.com/epics-modules/asyn.git "${ASYN}"
           fi
+
+          # Ubuntu/Debian provide SunRPC via libtirpc, with headers under /usr/include/tirpc.
+          # asyn's vxi11 support includes <rpc/rpc.h>, so we must add that include path and link libtirpc.
+          cat >"${ASYN}/configure/CONFIG_SITE.local" <<'EOF'
+          USR_CPPFLAGS += -I/usr/include/tirpc
+          USR_LDLIBS += -ltirpc
+          EOF
 
           if [[ ! -d "${CALCSUPPORT}" ]]; then
             echo "Fetching calc ${CALC_VERSION}"
