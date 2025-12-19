@@ -1,0 +1,210 @@
+#
+# cmd_response: example EPICS database for cmd_response Arduino code
+#
+# ===== ============================
+# macro meaning
+# ===== ============================
+# P     prefix for this database
+# PORT  asyn port to be used
+# ===== ============================
+
+
+record(stringout, "$(P)cmd") {
+    field(DESC, "command interface")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto debug $(PORT)")
+}
+
+record(ai, "$(P)ai0") {
+    field(DESC, "V_photocell, raw")
+    field(EGU,  "VDC")
+    field(PREC, "3")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai(0) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.004887585532746823069403714565")  # 5 VDC / 1023 ADC units
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+record(ai, "$(P)ai0:mean") {
+    field(DESC, "V_photocell")
+    field(EGU,  "VDC")
+    field(PREC, "5")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai_mean(0) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.000004887585532746823069403714565")  # 5 VDC / 1023 ADC units / 1000 multiplier
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+record(ai, "$(P)ai1") {
+    field(DESC, "V_LED, raw")
+    field(EGU,  "VDC")
+    field(PREC, "3")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai(1) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.004887585532746823069403714565")  # 5 VDC / 1023 ADC units
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+record(ai, "$(P)ai1:mean") {
+    field(DESC, "V_LED")
+    field(EGU,  "VDC")
+    field(PREC, "5")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai_mean(1) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.000004887585532746823069403714565")  # 5 VDC / 1023 ADC units / 1000 multiplier
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+record(ai, "$(P)ai2") {
+    field(DESC, "V_thermistor, raw")
+    field(EGU,  "VDC")
+    field(PREC, "3")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai(2) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.004887585532746823069403714565")  # 5 VDC / 1023 ADC units
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+record(ai, "$(P)ai2:mean") {
+    field(DESC, "V_thermistor")
+    field(EGU,  "VDC")
+    field(PREC, "5")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai_mean(2) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.000004887585532746823069403714565")  # 5 VDC / 1023 ADC units / 1000 multiplier
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+record(ai, "$(P)ai3:mean") {
+    field(DESC, "V_ref for thermistor")
+    field(EGU,  "VDC")
+    field(PREC, "5")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto ai_mean(3) $(PORT)")
+    field(SCAN, "Passive")
+    field(AOFF, "0")
+    field(ASLO, "0.000004887585532746823069403714565")  # 5 VDC / 1023 ADC units / 1000 multiplier
+    field(HOPR, "5")
+    field(LOPR, "0")
+}
+
+# record(ao, "$(P)pwm6") {
+#     field(DESC, "PWM output 6")
+#     field(EGU,  "VDC")
+#     field(PREC, "2")
+#     field(DTYP, "stream")
+#     field(OUT,  "@cmd_response.proto pwm(6) $(PORT)")
+#     field(AOFF, "0")
+#     field(ASLO, "0.01960784313725490196078431372549")  # 5 VDC / 255 ADC units
+#     field(HOPR, "5")
+#     field(LOPR, "0")
+#     field(DRVH, "5")
+#     field(DRVL, "0")
+# }
+
+record(ao, "$(P)pwm11") {
+    field(DESC, "LED")
+    field(EGU,  "VDC")
+    field(PREC, "2")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto pwm(11) $(PORT)")
+    field(AOFF, "0")
+    field(ASLO, "0.01960784313725490196078431372549")  # 5 VDC / 255 ADC units
+    field(HOPR, "5")
+    field(LOPR, "0")
+    field(DRVH, "5")
+    field(DRVL, "0")
+}
+
+record(bo, "$(P)led") {
+    field(DESC, "Onboard LED (GPIO8)")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto bo(8) $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(PINI, "NO")
+}
+
+record(ai, "$(P)rate") {
+    field(DESC, "update rate")
+    field(EGU,  "1/s")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto rate $(PORT)")
+    field(SCAN, "Passive")
+}
+
+record(ao, "$(P)period") {
+    field(DESC, "averaging period")
+    field(VAL,  "0.5")
+    field(PREC, "2")
+    # Don't write to the device automatically during iocInit.
+    # Set this PV explicitly when you want to change the firmware period.
+    field(PINI, "NO")
+    field(EGU,  "s")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto period $(PORT)")
+    field(AOFF, "0")
+    # Device expects microseconds in the "!t" command.
+    # Convert seconds -> microseconds.
+    field(ASLO, "1000000")
+    field(HOPR, "10.000")
+    field(LOPR, "0.005")
+    field(DRVH, "10.000")
+    field(DRVL, "0.005")
+}
+
+###
+### NOTE:
+### The `epid` record type comes from the EPICS PID module (not from calc/asyn/stream).
+### If you don't have that module in your synApps build, this record will fail to load.
+### Commented out to allow the rest of the database to load.
+###
+#record(epid, "$(P)epid") {
+#  field(DESC, "Feedback control")
+#  field(DTYP, "Soft Channel")
+#
+#  field(SMSL, "supervisory")
+#  # with SMSL=supervisory, setpoint is .VAL
+#  field(INP, "$(P)ai0:mean")
+#
+#  # with SMSL=closed_loop, setpoint comes via .STPL
+#  #field(SMSL, "closed_loop")
+#  #field(STPL, "$(P)setpoint")
+#
+#  field(OUTL, "$(P)pwm11 PP NMS")
+#
+#  field(FBON, "0")
+#
+#  field(KP, "0.1")
+#  field(KI, "5")
+#  field(KD, "0")
+#  field(SCAN, ".5 second")
+#
+#  field(DRVL, "0")
+#  field(DRVH, "5")
+#  field(PREC, "4")
+#}
+
+
+#  simple monitoring program:
+#  setenv P ino:
+#  export P=ino:
+#  pvview ${P}cr:{pwm11,ai{0,1,2}:mean,{rate,period},cmd}{.DESC,} &

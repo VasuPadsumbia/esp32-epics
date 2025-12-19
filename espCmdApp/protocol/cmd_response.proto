@@ -1,0 +1,80 @@
+# cmd_response:
+#   simple command/response access via USB to Arduino's I/O capabilities
+#
+# soft link this file to the IOC's boot directory to be found at run time
+
+InTerminator = LF;
+OutTerminator = LF;
+# StreamDevice interprets ReplyTimeout as an integer (often milliseconds).
+# 1000 here avoids false timeouts on short USB/serial jitter.
+ReplyTimeout = 1000;
+#LockTimeout = 500;
+
+# silence most error messages
+ERROR_RESPONSE = "ERROR_.*";
+@mismatch { in $ERROR_RESPONSE; }
+ExtraInput = Ignore;
+
+#     turn on diagnostics with these IOC shell commands:
+#       asynSetTraceIOMask "usb0" 0 2
+#       asynSetTraceMask   "usb0" 0 9
+
+# ai
+ai {
+  out "?ai \$1";
+  in "AI %*d %d";
+
+}
+
+# longout
+ai_mean {
+  out "?ai:mean \$1";
+  in "AI_MEAN %*d %f";
+}
+
+# bi
+bi {
+  out "?bi \$1";
+  in "BI %*d %d";
+}
+
+# bo
+bo {
+  out "!bo \$1 %d";
+  in "Ok";
+}
+
+# longout
+pwm {
+  out "!pwm \$1 %d";
+  in "Ok";
+}
+
+# ao
+period {
+  out "!t %u";
+  in "Ok";
+}
+
+# ai
+rate {
+  out "?rate";
+  in "RATE %d";
+}
+
+debug {
+    ExtraInput = Error;
+    out "%s";
+    in "%39c";
+}
+
+pin_out {
+  out "!pin %d 1";
+  in "Ok";
+}
+
+pin_in {
+  out "!pin %d 0";
+  in "Ok";
+}
+

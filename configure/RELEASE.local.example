@@ -1,0 +1,15 @@
+# configure/RELEASE.local.example
+#
+# Copy to configure/RELEASE.local and edit the absolute paths for your machine.
+# This repository's .gitignore ignores /configure/*.local, so your local paths
+# won't be committed.
+#
+# IMPORTANT: EPICS convertRelease.pl (checkRelease) expects EPICS_BASE to be a
+# literal absolute path.
+
+EPICS_BASE = /absolute/path/to/EPICS/epics-base
+
+# synApps / support modules (absolute paths)
+ASYN = /absolute/path/to/asyn-R4-42
+STREAMDEVICE = /absolute/path/to/StreamDevice-2-8-16
+CALCSUPPORT = /absolute/path/to/calc-R3-7-4
