@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-host:
+    name: Build (EPICS host)
+    runs-on: ubuntu-latest
+
+    env:
+      EPICS_BASE_VERSION: "R7.0.8.1"
+      ASYN_VERSION: "R4-42"
+      CALC_VERSION: "R3-7-4"
+      STREAMDEVICE_VERSION: "2-8-16"
+      EPICS_HOST_ARCH: "linux-x86_64"
+
+      # Install/build locations inside the runner workspace
+      EPICS_ROOT: ${{ github.workspace }}/_ci/epics
+      EPICS_BASE: ${{ github.workspace }}/_ci/epics/epics-base
+      ASYN: ${{ github.workspace }}/_ci/epics/asyn
+      CALCSUPPORT: ${{ github.workspace }}/_ci/epics/calc
+      STREAMDEVICE: ${{ github.workspace }}/_ci/epics/StreamDevice
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            curl \
+            git \
+            libreadline-dev \
+            perl \
+            python3 \
+            re2c \
+            make
+
+      - name: Cache EPICS builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            _ci/epics
+          key: epics-${{ runner.os }}-${{ env.EPICS_BASE_VERSION }}-${{ env.ASYN_VERSION }}-${{ env.STREAMDEVICE_VERSION }}-${{ env.CALC_VERSION }}
+
+      - name: Build EPICS Base + modules
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "${EPICS_ROOT}"
+
+          if [[ ! -d "${EPICS_BASE}" ]]; then
+            echo "Fetching EPICS Base ${EPICS_BASE_VERSION}"
+            mkdir -p "${EPICS_BASE}"
+            curl -fsSL "https://github.com/epics-base/epics-base/archive/refs/tags/${EPICS_BASE_VERSION}.tar.gz" \
+              | tar -xz --strip-components=1 -C "${EPICS_BASE}"
+          fi
+
+          if [[ ! -f "${EPICS_BASE}/lib/${EPICS_HOST_ARCH}/libca.so" && ! -f "${EPICS_BASE}/lib/${EPICS_HOST_ARCH}/libca.dylib" ]]; then
+            echo "Building EPICS Base"
+            make -C "${EPICS_BASE}" -j"$(nproc)"
+          else
+            echo "EPICS Base already built (cache hit)"
+          fi
+
+          if [[ ! -d "${ASYN}" ]]; then
+            echo "Fetching asyn ${ASYN_VERSION}"
+            git clone --depth 1 --branch "${ASYN_VERSION}" https://github.com/epics-modules/asyn.git "${ASYN}"
+          fi
+
+          if [[ ! -d "${CALCSUPPORT}" ]]; then
+            echo "Fetching calc ${CALC_VERSION}"
+            git clone --depth 1 --branch "${CALC_VERSION}" https://github.com/epics-modules/calc.git "${CALCSUPPORT}"
+          fi
+
+          if [[ ! -d "${STREAMDEVICE}" ]]; then
+            echo "Fetching StreamDevice ${STREAMDEVICE_VERSION}"
+            git clone --depth 1 --branch "${STREAMDEVICE_VERSION}" https://github.com/paulscherrerinstitute/StreamDevice.git "${STREAMDEVICE}"
+          fi
+
+          # Configure and build asyn
+          cat >"${ASYN}/configure/RELEASE" <<EOF
+          EPICS_BASE=${EPICS_BASE}
+          EOF
+          make -C "${ASYN}" -j"$(nproc)"
+
+          # Configure and build calc
+          cat >"${CALCSUPPORT}/configure/RELEASE" <<EOF
+          EPICS_BASE=${EPICS_BASE}
+          EOF
+          make -C "${CALCSUPPORT}" -j"$(nproc)"
+
+          # Configure and build StreamDevice
+          cat >"${STREAMDEVICE}/configure/RELEASE" <<EOF
+          EPICS_BASE=${EPICS_BASE}
+          ASYN=${ASYN}
+          EOF
+          make -C "${STREAMDEVICE}" -j"$(nproc)"
+
+      - name: Configure project RELEASE.local (CI)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > configure/RELEASE.local <<EOF
+          EPICS_BASE = ${EPICS_BASE}
+          ASYN = ${ASYN}
+          STREAMDEVICE = ${STREAMDEVICE}
+          CALCSUPPORT = ${CALCSUPPORT}
+          EOF
+
+      - name: Build IOC + CA client
+        run: |
+          make -j"$(nproc)"
+
+      - name: Basic smoke checks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Verify binaries exist (paths depend on EPICS_HOST_ARCH)
+          test -x "bin/${EPICS_HOST_ARCH}/espCmd"
+          test -x "bin/${EPICS_HOST_ARCH}/caClient"
+
+          # Help should work without any IOC running
+          ./run.sh client --help >/dev/null
+
+      - name: Shellcheck helper script
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y --no-install-recommends shellcheck
+          shellcheck run.sh
