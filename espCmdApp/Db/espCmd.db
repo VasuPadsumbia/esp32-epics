@@ -9,10 +9,68 @@
 # ===== ============================
 
 
-record(stringout, "$(P)cmd") {
-    field(DESC, "command interface")
+record(stringin, "$(P)id") {
+    field(DESC, "device identification")
     field(DTYP, "stream")
-    field(OUT,  "@cmd_response.proto debug $(PORT)")
+    field(INP,  "@cmd_response.proto id $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(stringin, "$(P)version") {
+    field(DESC, "firmware version")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto version $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)num_ai") {
+    field(DESC, "number of analog inputs")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto num_ai $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)num_bin") {
+    field(DESC, "number of digital inputs")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto num_bin $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(bo, "$(P)ai0:watch") {
+    field(DESC, "enable mean accumulation for ai0")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto ai_watch(0) $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(bo, "$(P)ai1:watch") {
+    field(DESC, "enable mean accumulation for ai1")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto ai_watch(1) $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(bo, "$(P)ai2:watch") {
+    field(DESC, "enable mean accumulation for ai2")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto ai_watch(2) $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(bo, "$(P)ai3:watch") {
+    field(DESC, "enable mean accumulation for ai3")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto ai_watch(3) $(PORT)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
 }
 
 record(ai, "$(P)ai0") {
@@ -143,6 +201,24 @@ record(bo, "$(P)led") {
     field(PINI, "NO")
 }
 
+# Convenience PVs (firmware-like commands as a single string)
+# Use:
+#   caput -S ESP:pin "15 1"   (set GPIO15 to output)
+#   caput -S ESP:pin "15 0"   (set GPIO15 to input)
+#   caput -S ESP:bo  "15 1"   (drive GPIO15 high)
+#   caput -S ESP:bo  "15 0"   (drive GPIO15 low)
+record(stringout, "$(P)pin") {
+    field(DESC, "set pin mode: '<gpio> <0|1>'")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto pin_mode_raw $(PORT)")
+}
+
+record(stringout, "$(P)bo") {
+    field(DESC, "set digital output: '<gpio> <0|1>'")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto bo_raw $(PORT)")
+}
+
 record(ai, "$(P)rate") {
     field(DESC, "update rate")
     field(EGU,  "1/s")
@@ -169,6 +245,67 @@ record(ao, "$(P)period") {
     field(LOPR, "0.005")
     field(DRVH, "10.000")
     field(DRVL, "0.005")
+}
+
+record(longin, "$(P)period_us") {
+    field(DESC, "device period (microseconds)")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto period_get $(PORT)")
+    field(SCAN, "Passive")
+}
+
+record(calc, "$(P)period:rb") {
+    field(DESC, "device period readback (seconds)")
+    field(INPA, "$(P)period_us")
+    field(CALC, "A/1e6")
+    field(PREC, "6")
+}
+
+record(longin, "$(P)period_min_us") {
+    field(DESC, "minimum allowed period (microseconds)")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto period_min $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)period_max_us") {
+    field(DESC, "maximum allowed period (microseconds)")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto period_max $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(longout, "$(P)multiplier") {
+    field(DESC, "AI mean multiplier")
+    field(DTYP, "stream")
+    field(OUT,  "@cmd_response.proto multiplier_set $(PORT)")
+    field(DRVH, "1000000")
+    field(DRVL, "1")
+}
+
+record(longin, "$(P)multiplier:rb") {
+    field(DESC, "AI mean multiplier readback")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto multiplier_get $(PORT)")
+    field(SCAN, "Passive")
+}
+
+record(longin, "$(P)multiplier_min") {
+    field(DESC, "minimum allowed multiplier")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto multiplier_min $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)multiplier_max") {
+    field(DESC, "maximum allowed multiplier")
+    field(DTYP, "stream")
+    field(INP,  "@cmd_response.proto multiplier_max $(PORT)")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
 }
 
 ###

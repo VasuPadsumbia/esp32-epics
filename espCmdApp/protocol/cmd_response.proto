@@ -5,11 +5,26 @@
 
 InTerminator = LF;
 OutTerminator = LF;
+
+num_ai {
+  out "?#ai";
+  in "NUM_AI %d";
+}
+
+num_bin {
+  out "?#bi";
+  in "NUM_BIN %d";
+}
 # StreamDevice interprets ReplyTimeout as an integer (often milliseconds).
 # 1000 here avoids false timeouts on short USB/serial jitter.
 ReplyTimeout = 1000;
 #LockTimeout = 500;
 
+
+ai_watch {
+  out "!ai:watch \$1 %d";
+  in "Ok";
+}
 # silence most error messages
 ERROR_RESPONSE = "ERROR_.*";
 @mismatch { in $ERROR_RESPONSE; }
@@ -56,16 +71,62 @@ period {
   in "Ok";
 }
 
+period_get {
+  out "?t";
+  in "PERIOD %d";
+}
+
+period_min {
+  out "?t:min";
+  in "%d";
+}
+
+period_max {
+  out "?t:max";
+  in "%d";
+}
+
+multiplier_set {
+  out "!k %d";
+  in "Ok";
+}
+
+multiplier_get {
+  out "?k";
+  in "MULTIPLIER %d";
+}
+
+multiplier_min {
+  out "?k:min";
+  in "%d";
+}
+
+multiplier_max {
+  out "?k:max";
+  in "%d";
+}
+
 # ai
 rate {
   out "?rate";
   in "RATE %d";
 }
 
+# identity / firmware info
+id {
+  out "?id";
+  in "%39[^\n]";
+}
+
+version {
+  out "?v";
+  in "%39[^\n]";
+}
+
 debug {
     ExtraInput = Error;
     out "%s";
-    in "%39c";
+  in "%39[^\n]";
 }
 
 pin_out {
@@ -75,6 +136,25 @@ pin_out {
 
 pin_in {
   out "!pin %d 0";
+  in "Ok";
+}
+
+pin_mode {
+  out "!pin \$1 %d";
+  in "Ok";
+}
+
+# Convenience: allow writing the remainder of the command as a string.
+# Example:
+#   caput -S ESP:pin "15 1"   -> sends "!pin 15 1"
+#   caput -S ESP:bo  "15 0"   -> sends "!bo 15 0"
+pin_mode_raw {
+  out "!pin %s";
+  in "Ok";
+}
+
+bo_raw {
+  out "!bo %s";
   in "Ok";
 }
 

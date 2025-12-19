@@ -36,6 +36,10 @@ epicsEnvSet("STREAM_DEVICE_DEBUG","1")
 ## Load record instances
 dbLoadRecords("${TOP}/espCmdApp/Db/espCmd.db","P=ESP:,PORT=vasu-usb,user=ESP")
 
+cd "${TOP}/espCmdApp/Db"
+dbLoadTemplate("gpio.substitutions")
+cd "${TOP}"
+
 #cd "${TOP}/iocBoot/${IOC}"
 iocInit
 

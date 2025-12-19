@@ -33,3 +33,4 @@ O.*/
 .*.swp
 .DS_Store
 sdkconfig
+.gitignore

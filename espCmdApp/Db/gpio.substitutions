@@ -1,0 +1,24 @@
+# Generate GPIO PVs for ESP32-C6 GPIO0..GPIO21 excluding USB pins 18/19
+file "gpio.template" {
+pattern { P,    PORT,     N }
+        { ESP:, vasu-usb, 0 }
+        { ESP:, vasu-usb, 1 }
+        { ESP:, vasu-usb, 2 }
+        { ESP:, vasu-usb, 3 }
+        { ESP:, vasu-usb, 4 }
+        { ESP:, vasu-usb, 5 }
+        { ESP:, vasu-usb, 6 }
+        { ESP:, vasu-usb, 7 }
+        { ESP:, vasu-usb, 8 }
+        { ESP:, vasu-usb, 9 }
+        { ESP:, vasu-usb, 10 }
+        { ESP:, vasu-usb, 11 }
+        { ESP:, vasu-usb, 12 }
+        { ESP:, vasu-usb, 13 }
+        { ESP:, vasu-usb, 14 }
+        { ESP:, vasu-usb, 15 }
+        { ESP:, vasu-usb, 16 }
+        { ESP:, vasu-usb, 17 }
+        { ESP:, vasu-usb, 20 }
+        { ESP:, vasu-usb, 21 }
+}

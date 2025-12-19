@@ -4,6 +4,8 @@ include $(TOP)/configure/CONFIG
 
 # Directories to build, any order
 DIRS += configure
+DIRS += caClientLib
+DIRS += caClientApp
 DIRS += $(wildcard *Sup)
 DIRS += $(wildcard *App)
 DIRS += $(wildcard *Top)
@@ -18,6 +20,9 @@ $(foreach dir, $(filter-out configure, $(DIRS)), \
 # Any *App dirs depend on all *Sup dirs
 $(foreach dir, $(filter %App, $(DIRS)), \
     $(eval $(dir)_DEPEND_DIRS += $(filter %Sup, $(DIRS))))
+
+# Ensure the CA client app links after the library is built
+caClientApp_DEPEND_DIRS += caClientLib
 
 # Any *Top dirs depend on all *Sup and *App dirs
 $(foreach dir, $(filter %Top, $(DIRS)), \
