@@ -80,12 +80,10 @@ jobs:
             git clone --depth 1 --branch "${ASYN_VERSION}" https://github.com/epics-modules/asyn.git "${ASYN}"
           fi
 
-          # Ubuntu/Debian provide SunRPC via libtirpc, with headers under /usr/include/tirpc.
-          # asyn's vxi11 support includes <rpc/rpc.h>, so we must add that include path and link libtirpc.
+          # Ubuntu/Debian provide SunRPC via libtirpc. asyn R4-42 has a built-in switch
+          # which adds the correct include path and links tirpc for vxi11 support.
           cat >"${ASYN}/configure/CONFIG_SITE.local" <<'EOF'
-          USR_CPPFLAGS += -I/usr/include/tirpc
-          SYS_LIBS += tirpc
-          USR_LDLIBS += -ltirpc
+          TIRPC=YES
           EOF
 
           if [[ ! -d "${CALCSUPPORT}" ]]; then
