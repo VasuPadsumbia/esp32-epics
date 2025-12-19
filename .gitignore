@@ -8,7 +8,7 @@
 /templates/
 /build/
 /lib/
-
+/actions-runner/
 # Local configuration files
 /configure/*.local
 

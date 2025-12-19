@@ -18,7 +18,7 @@ jobs:
       EPICS_BASE_VERSION: "R7.0.8.1"
       ASYN_VERSION: "R4-42"
       CALC_VERSION: "R3-7-4"
-      STREAMDEVICE_VERSION: "2-8-16"
+      STREAMDEVICE_VERSION: "2.8.16"
       EPICS_HOST_ARCH: "linux-x86_64"
 
       # Install/build locations inside the runner workspace
