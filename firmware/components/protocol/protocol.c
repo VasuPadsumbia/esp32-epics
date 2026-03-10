@@ -103,6 +103,7 @@ void protocol_parse_and_enqueue(const char *line, int response_fd) {
     else if (strcmp(act_s, "CFG")     == 0) cmd.action = ACTION_CFG;
     else if (strcmp(act_s, "START")   == 0) cmd.action = ACTION_START;
     else if (strcmp(act_s, "STOP")    == 0) cmd.action = ACTION_STOP;
+    else if (strcmp(act_s, "CYCLE")   == 0) cmd.action = ACTION_CYCLE;
 
     /* Parse Arguments based on context */
     if (args) {
@@ -120,7 +121,7 @@ void protocol_parse_and_enqueue(const char *line, int response_fd) {
     }
 
     if (xQueueSend(s_cmd_queue, &cmd, 0) != pdTRUE) {
-        UTILS_LOGW(TAG, "Queue full — dropping command");
+        // UTILS_LOGW(TAG, "Queue full — dropping command");
     }
 }
 

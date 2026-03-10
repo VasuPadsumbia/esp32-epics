@@ -18,8 +18,8 @@ end
 
 # Load bootloader symbols
 set confirm off
-    add-symbol-file /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader/bootloader.elf
+    add-symbol-file /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader/bootloader.elf
 set confirm on
 
 # Load application symbols
-file /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/esp32_epics_firmware.elf
+file /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/esp32_epics_firmware.elf

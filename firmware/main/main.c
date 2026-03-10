@@ -63,6 +63,8 @@ static const char *TAG = "APP";
 
 static uint32_t s_app_cycle_ms = 100;
 
+uint32_t app_get_cycle_ms(void) { return s_app_cycle_ms; }
+
 /* ======================================================================
  * Application Task
  * Dequeues commands from the shared protocol queue, dispatches to hw_hal,
@@ -71,7 +73,7 @@ static uint32_t s_app_cycle_ms = 100;
 static void app_task(void *pvParameters) {
     QueueHandle_t  cmd_queue = (QueueHandle_t)pvParameters;
     protocol_cmd_t cmd;
-    char           reply[64];
+    char           reply[256];
 
     UTILS_LOGI(TAG, "app_task running on core %d", xPortGetCoreID());
 

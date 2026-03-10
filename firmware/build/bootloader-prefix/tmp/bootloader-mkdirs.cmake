@@ -5,18 +5,18 @@ cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
   "/home/vasu-hdd/.espressif/v5.5.3/esp-idf/components/bootloader/subproject"
-  "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader"
-  "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix"
-  "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix/tmp"
-  "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix/src/bootloader-stamp"
-  "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix/src"
-  "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix/src/bootloader-stamp"
+  "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader"
+  "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix"
+  "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix/tmp"
+  "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix/src/bootloader-stamp"
+  "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix/src"
+  "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

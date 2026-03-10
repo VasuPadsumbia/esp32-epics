@@ -1,0 +1,64 @@
+name: ESP32-EPICS CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      
+      - name: Cache ESP-IDF
+        uses: actions/cache@v3
+        with:
+          path: ~/.espressif
+          key: ${{ runner.os }}-esp-idf
+
+      - name: Build Firmware
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.1
+          target: esp32
+          path: 'firmware'
+          command: 'idf.py build'
+
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest requests
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. 
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  verify-epics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install EPICS Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libreadline-dev
+      # Note: Building full EPICS in CI is slow, usually better to use a pre-built image or mock.
+      # For now, we just verify the database syntax.
+      - name: Verify DB syntax
+        run: |
+          # Minimal check using soft-ioc if available or just presence
+          test -f epics_ioc/esp32App/Db/esp32.db
+          test -f epics_ioc/esp32App/Db/esp32.proto

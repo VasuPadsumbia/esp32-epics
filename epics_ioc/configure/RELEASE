@@ -1,0 +1,6 @@
+# Auto-generated from project.conf — do not edit manually
+EPICS_BASE=/home/vasu-hdd/EPICS/base-7.0.8.1
+ASYN=/home/vasu-hdd/EPICS/support/asyn
+STREAM=/home/vasu-hdd/EPICS/support/stream/StreamDevice
+-include $(TOP)/../RELEASE.$(EPICS_HOST_ARCH).local
+-include $(TOP)/configure/RELEASE.local

@@ -1,0 +1,48 @@
+# --- Per-Pin Records (Generic) ---
+# Naming follows: ESP32:PIN:$(PIN):ROLE or ESP32:GPIO:$(PIN):OUT
+
+record(stringout, "ESP32:PIN:$(PIN):ROLE") {
+    field(DESC, "Set Role for Pin $(PIN)")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto pin_role($(PIN)) $(PORT)")
+}
+
+record(bo, "ESP32:GPIO:$(PIN):OUT") {
+    field(DESC, "Pin $(PIN) Logic Out")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto gpio_set_out($(PIN)) $(PORT)")
+    field(ZNAM, "0")
+    field(ONAM, "1")
+}
+
+record(bi, "ESP32:GPIO:$(PIN):IN") {
+    field(DESC, "Pin $(PIN) Logic In")
+    field(DTYP, "stream")
+    field(INP,  "@esp32.proto gpio_get_in($(PIN)) $(PORT)")
+    field(SCAN, "1 second")
+}
+
+record(longout, "ESP32:PWM:$(PIN):VAL") {
+    field(DESC, "PWM Duty $(PIN)")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto pwm_set($(PIN)) $(PORT)")
+    field(DRVL, "0")
+    field(DRVH, "1023")
+}
+
+record(longout, "ESP32:DAC:$(PIN):VAL") {
+    field(DESC, "DAC Voltage $(PIN)")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto dac_set($(PIN)) $(PORT)")
+    field(DRVL, "0")
+    field(DRVH, "255")
+}
+
+record(ai, "ESP32:AI:$(PIN):VAL") {
+    field(DESC, "AI Voltage $(PIN)")
+    field(DTYP, "stream")
+    field(INP,  "@esp32.proto ai_get($(PIN)) $(PORT)")
+    field(EGU,  "mV")
+    field(SCAN, "1 second")
+    field(PREC, "1")
+}

@@ -1,0 +1,139 @@
+# --- System Records ---
+record(bo, "ESP32:SYS:PING") {
+    field(DESC, "Heartbeat Check")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto sys_ping $(PORT)")
+}
+
+record(stringin, "ESP32:SYS:STATUS") {
+    field(DESC, "Uptime MS String")
+    field(DTYP, "stream")
+    field(INP,  "@esp32.proto sys_status $(PORT)")
+    field(SCAN, "1 second")
+}
+
+record(longin, "ESP32:SYS:UPTIME") {
+    field(DESC, "Uptime ms raw")
+    field(DTYP, "stream")
+    field(EGU,  "ms")
+    field(INP,  "@esp32.proto sys_uptime $(PORT)")
+    field(SCAN, "1 second")
+}
+
+record(calc, "ESP32:SYS:UPTIME:S") {
+    field(DESC, "Uptime Seconds")
+    field(EGU,  "s")
+    field(INPA, "ESP32:SYS:UPTIME CP")
+    field(CALC, "A/1000")
+    field(PREC, "0")
+}
+
+record(longin, "ESP32:SYS:HEAP") {
+    field(DESC, "Free Heap bytes")
+    field(DTYP, "stream")
+    field(EGU,  "bytes")
+    field(INP,  "@esp32.proto sys_heap $(PORT)")
+    field(SCAN, "5 second")
+}
+
+record(stringin, "ESP32:SYS:VERSION") {
+    field(DESC, "Firmware Version")
+    field(DTYP, "stream")
+    field(INP,  "@esp32.proto sys_version $(PORT)")
+    field(PINI, "YES")
+}
+
+record(bo, "ESP32:SYS:RESET") {
+    field(DESC, "Soft Reset")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto sys_reset $(PORT)")
+}
+
+record(longin, "ESP32:TASK:COUNT") {
+    field(DESC, "Task Count")
+    field(DTYP, "stream")
+    field(INP,  "@esp32.proto task_list $(PORT)")
+    field(SCAN, "10 second")
+}
+
+# --- Task Monitoring (APP, UART, TCP) ---
+record(longin, "ESP32:TASK:APP:MIN") {
+    field(DESC, "App Min Cycle")
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_min(APP) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(longin, "ESP32:TASK:APP:MAX") {
+    field(DESC, "App Max Cycle")
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_max(APP) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(longin, "ESP32:TASK:APP:AVG") {
+    field(DESC, "App Avg Cycle")
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_avg(APP) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(bo, "ESP32:TASK:APP:RESET") {
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto task_reset(APP) $(PORT)")
+}
+
+record(longin, "ESP32:TASK:UART:MIN") {
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_min(UART) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(longin, "ESP32:TASK:UART:MAX") {
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_max(UART) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(longin, "ESP32:TASK:UART:AVG") {
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_avg(UART) $(PORT)")
+    field(SCAN, "2 second")
+}
+
+record(longin, "ESP32:TASK:TCP:MIN") {
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_min(TCP) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(longin, "ESP32:TASK:TCP:MAX") {
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_max(TCP) $(PORT)")
+    field(SCAN, "2 second")
+}
+record(longin, "ESP32:TASK:TCP:AVG") {
+    field(DTYP, "stream")
+    field(EGU,  "us")
+    field(INP,  "@esp32.proto task_get_avg(TCP) $(PORT)")
+    field(SCAN, "2 second")
+}
+
+# --- LED Controls ---
+record(bo, "ESP32:LED") {
+    field(DESC, "Control LED")
+    field(DTYP, "stream")
+    field(OUT,  "@esp32.proto led_set $(PORT)")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+record(bi, "ESP32:LED:RBV") {
+    field(DESC, "LED State RBV")
+    field(DTYP, "stream")
+    field(INP,  "@esp32.proto led_get $(PORT)")
+    field(SCAN, "1 second")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}

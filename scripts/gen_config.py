@@ -48,6 +48,7 @@ def write_sdkconfig_defaults(cfg, sdk_file):
     print(f"[gen-config] Written: {sdk_file}")
 
 def write_ioc_env(cfg, env_file):
+    os.makedirs(os.path.dirname(env_file), exist_ok=True)
     with open(env_file, 'w') as f:
         f.write("# Auto-generated from project.conf — do not edit manually\n")
         f.write(f'epicsEnvSet("SERIAL_PORT", "{cfg.get("SERIAL_PORT", "/dev/ttyACM0")}")\n')

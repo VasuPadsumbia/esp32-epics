@@ -1,0 +1,111 @@
+Terminator = LF;
+ExtraInput = Ignore;
+ReplyTimeout = 2000;
+ReadTimeout = 500;
+WriteTimeout = 500;
+MaxInput = 256;
+
+# --- System ---
+sys_ping {
+    out "SYS:PING";
+    in "PONG";
+}
+
+sys_status {
+    out "SYS:STATUS";
+    in "OK %s"; 
+}
+
+sys_uptime {
+    out "SYS:STATUS";
+    in "OK %d";
+}
+
+sys_heap {
+    out "SYS:HEAP";
+    in "%i";
+}
+
+sys_version {
+    out "SYS:VERSION";
+    in "%s";
+}
+
+sys_reset {
+    out "SYS:RESET";
+    in "OK";
+}
+
+# --- Tasks ---
+task_list {
+    out "TASK:LIST";
+    in "%i";
+}
+
+task_get_min {
+    out "TASK:GET \$1";
+    in "%i %*i %*i";
+}
+
+task_get_max {
+    out "TASK:GET \$1";
+    in "%*i %i %*i";
+}
+
+task_get_avg {
+    out "TASK:GET \$1";
+    in "%*i %*i %i";
+}
+
+task_reset {
+    out "TASK:RESET \$1";
+    in "OK";
+}
+
+# --- LED ---
+led_set {
+    out "LED:SET %d";
+    in "OK";
+}
+
+led_get {
+    out "LED:GET";
+    in "%d";
+}
+
+# --- GPIO ---
+gpio_set_out {
+    out "GPIO:SET \$1 %d";
+    in "OK";
+}
+
+gpio_get_in {
+    out "GPIO:GET \$1";
+    in "%d";
+}
+
+gpio_set_dir {
+    out "GPIO:DIR \$1 %s";
+    in "OK";
+}
+
+# --- Peripherals ---
+pin_role {
+    out "PIN:CFG \$1 %d";
+    in "OK";
+}
+
+pwm_set {
+    out "PWM:SET \$1 %d";
+    in "OK";
+}
+
+dac_set {
+    out "DAC:SET \$1 %d";
+    in "OK";
+}
+
+ai_get {
+    out "AI:GET \$1";
+    in "%i";
+}

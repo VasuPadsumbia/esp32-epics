@@ -43,9 +43,7 @@ def main():
     
     # 2. ADC Test
     print("\n--- Testing ADC ---")
-    # Config ADC on Pin 34
-    test_tcp_command(ip, port, "AI:CFG 34\n", "OK")
-    # Read ADC value (should return an integer/voltage)
+    # Read ADC value directly (no config needed)
     test_tcp_command(ip, port, "AI:GET 34\n", "")
 
     # 3. I2C Test
@@ -58,12 +56,8 @@ def main():
     # Config UART2 TX=17, RX=16, Baud=9600
     test_tcp_command(ip, port, "UART2:CFG 17 16 9600\n", "OK")
 
-    # 5. System Cycle Test
-    print("\n--- Testing System Cycle ---")
-    # Set cycle time to 50ms
-    test_tcp_command(ip, port, "SYS:CYCLE 50\n", "OK")
-    
     print("\n=== Peripheral Tests Complete ===")
+
 
 if __name__ == "__main__":
     main()

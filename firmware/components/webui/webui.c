@@ -87,114 +87,24 @@ static uint32_t get_pin_caps(uint8_t pin) {
 }
 
 /* ---- GET / ---- */
+extern const uint8_t index_html_start[] asm("_binary_index_html_start");
+extern const uint8_t index_html_end[] asm("_binary_index_html_end");
+
+/* ---- GET / ---- */
 static esp_err_t index_get_handler(httpd_req_t *req) {
-    static const char html[] =
-        "<!DOCTYPE html><html lang='en'><head>"
-        "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-        "<title>ESP32 Advanced Control</title>"
-        "<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap'>"
-        "<style>"
-        ":root{--bg:#0f172a;--card:rgba(30,41,59,0.7);--primary:#38bdf8;--accent:#818cf8;--text:#f1f5f9;--border:rgba(255,255,255,0.1);--green:#10b981;--red:#ef4444;}"
-        "*{box-sizing:border-box;margin:0;padding:0;}"
-        "body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:var(--text);min-height:100vh;padding:20px;display:flex;justify-content:center;}"
-        ".container{width:100%;max-width:1100px;}"
-        "header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;}"
-        ".glass{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.3);}"
-        "h1{font-size:1.8rem;font-weight:600;background:linear-gradient(to right,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}"
-        ".tabs{display:flex;gap:10px;margin-bottom:20px;overflow-x:auto;padding-bottom:10px;}"
-        ".tab{padding:10px 20px;border-radius:8px;cursor:pointer;transition:0.3s;background:rgba(255,255,255,0.05);border:1px solid var(--border);white-space:nowrap;}"
-        ".tab.active{background:var(--primary);color:#000;font-weight:600;}"
-        ".panel{display:none;animation:fadeIn 0.3s ease-out;}"
-        ".panel.active{display:block;}"
-        "@keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}"
-        ".grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;}"
-        ".pin-card{padding:20px;transition:0.3s;position:relative;}"
-        ".pin-card:hover{border-color:var(--primary);transform:translateY(-2px);}"
-        ".badge{font-size:0.7rem;padding:2px 6px;border-radius:4px;background:var(--primary);color:#000;font-weight:700;margin-left:8px;vertical-align:middle;}"
-        ".row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}"
-        "select,input{background:#000;border:1px solid var(--border);color:var(--text);padding:6px;border-radius:4px;font-size:0.9rem;}"
-        "button{background:var(--primary);border:none;color:#000;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;transition:0.2s;}"
-        "button:hover{filter:brightness(1.1);}"
-        ".ctrl-group{margin-top:15px;padding-top:15px;border-top:1px solid var(--border);display:none;}"
-        ".val-display{font-size:1.4rem;font-weight:600;color:var(--primary);}"
-        "table{width:100%;border-collapse:collapse;margin-top:10px;}"
-        "th,td{text-align:left;padding:12px;border-bottom:1px solid var(--border);}"
-        "th{color:var(--primary);font-weight:600;font-size:0.8rem;text-transform:uppercase;}"
-        "</style></head><body>"
-        "<div class='container'><header><h1>ESP32 Advanced Control</h1><div id='uptime' style='font-size:0.9rem;opacity:0.7'></div></header>"
-        "<div class='tabs'>"
-        "  <div class='tab active' onclick='showTab(\"gpio\",this)'>IO Pin Mapping</div>"
-        "  <div class='tab' onclick='showTab(\"periph\",this)'>Peripheral Status</div>"
-        "  <div class='tab' onclick='showTab(\"tasks\",this)'>Task Timing</div>"
-        "  <div class='tab' onclick='showTab(\"settings\",this)'>System</div>"
-        "</div>"
-        "<div id='gpio' class='panel active'><div class='glass'><h2>Universal Pin Configuration</h2>"
-        "  <p style='margin-bottom:20px;opacity:0.6;font-size:0.9rem;'>Dynamically assign roles to any GPIO. Changes are persistent across reboots.</p>"
-        "  <div class='grid' id='pins-grid'></div></div></div>"
-        "<div id='periph' class='panel'><div class='glass'><h2>Hardware Peripherals</h2>"
-"  <div style='display:grid;grid-template-columns:1fr 1fr;gap:20px;'>"
-"    <div><h3>Sensor Data</h3><div id='adc-summary'></div></div>"
-"    <div><h3>Protocol Configuration</h3>"
-"      <div style='background:rgba(255,255,255,0.03);padding:15px;border-radius:8px;margin-bottom:15px;'>"
-"        <b>I2C Master</b><br><small>SDA/SCL</small><br>"
-"        <input id='i2c-sda' value='21' style='width:45px'> <input id='i2c-scl' value='22' style='width:45px'> "
-"        <button onclick='cfgI2c()'>Apply</button></div>"
-"      <div style='background:rgba(255,255,255,0.03);padding:15px;border-radius:8px;'>"
-"        <b>UART2 (Secondary)</b><br><small>TX/RX</small><br>"
-"        <input id='u2-tx' value='17' style='width:45px'> <input id='u2-rx' value='16' style='width:45px'> "
-"        <button onclick='cfgUart()'>Apply</button></div>"
-"    </div>"
-"  </div></div></div>"
-        "<div id='tasks' class='panel'><div class='glass'><h2>Realtime Task Monitoring</h2>"
-        "  <table><thead><tr><th>Endpoint</th><th>Min (µs)</th><th>Avg (µs)</th><th>Max (µs)</th></tr></thead><tbody id='tasks-body'></tbody></table>"
-        "</div></div>"
-        "<div id='settings' class='panel'><div class='glass'><h2>System & Network</h2>"
-        "  <div id='conf-info' style='margin-bottom:20px;'></div>"
-        "  <h3>Firmware Controls</h3>"
-        "  <div style='margin-top:10px;'>App Cycle: <input id='cycle-ms' value='100' style='width:60px'> ms <button onclick='setCycle()'>Update</button></div>"
-        "  <div style='margin-top:20px;'><button style='background:var(--red);color:#fff' onclick='resetEsp()'>Hard Reset ESP32</button></div>"
-        "</div></div>"
-        "<script>"
-        "const ROLES=['UNUSED','GPIO_IN','GPIO_OUT','PWM','ADC','DAC','I2C','UART'];"
-        "function showTab(t,el){document.querySelectorAll('.panel').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tabs .tab').forEach(e=>e.classList.remove('active'));"
-        "document.getElementById(t).classList.add('active');if(el)el.classList.add('active');}"
-        "function resetEsp(){if(confirm('Restart Device?')) fetch('/api/config/sys',{method:'POST',body:JSON.stringify({reset:true})});}"
-        "function setPinRole(p,r){fetch('/api/pin/cfg',{method:'POST',body:JSON.stringify({pin:p,role:parseInt(r)})}).then(()=>refreshPins());}"
-        "function setPinVal(p,v){fetch('/api/gpio',{method:'POST',body:JSON.stringify({pin:p,value:parseInt(v)})});}"
-        "function setPwm(p,d){fetch('/api/pwm',{method:'POST',body:JSON.stringify({pin:p,duty:parseInt(d)})});}"
-        "function setDac(p,v){fetch('/api/dac',{method:'POST',body:JSON.stringify({pin:p,value:parseInt(v)})});}"
-"function cfgI2c(){fetch('/api/config/hw',{method:'POST',body:JSON.stringify({type:'i2c',sda:parseInt(document.getElementById('i2c-sda').value),scl:parseInt(document.getElementById('i2c-scl').value)})});}"
-"function cfgUart(){fetch('/api/config/hw',{method:'POST',body:JSON.stringify({type:'uart',tx:parseInt(document.getElementById('u2-tx').value),rx:parseInt(document.getElementById('u2-rx').value)})});}"
-        "function refreshPins(){fetch('/api/gpio/schema').then(r=>r.json()).then(data=>{"
-        "  const grid=document.getElementById('pins-grid');grid.innerHTML=''; data.forEach(p=>{"
-        "    const card=document.createElement('div');card.className='pin-card glass';"
-        "    let html=`<div class='row'><b>Pin ${p.pin}</b><span class='badge'>${p.role_name}</span></div>`;"
-        "    html+=`<select onchange='setPinRole(${p.pin},this.value)'>`;"
-        "    ROLES.forEach((rn,idx)=>{ if((p.caps&(1<<idx))||idx==0) html+=`<option value='${idx}' ${idx==p.role?'selected':''}>${rn}</option>`; });"
-        "    html+='</select>';"
-        "    if(p.role==2){ html+=`<div class='ctrl-group' style='display:block'><button onclick='setPinVal(${p.pin},${p.val?0:1})'>${p.val?'Turn OFF':'Turn ON'}</button></div>`; }"
-        "    else if(p.role==3){ html+=`<div class='ctrl-group' style='display:block'><small>Duty Cycle</small><br><input type='range' min='0' max='1023' value='${p.val}' onchange='setPwm(${p.pin},this.value)'></div>`; }"
-        "    else if(p.role==4){ html+=`<div class='ctrl-group' style='display:block'><div class='val-display'>${p.mv}</div><small>Millivolts</small></div>`; }"
-        "    else if(p.role==5){ html+=`<div class='ctrl-group' style='display:block'><small>Voltage (0-255)</small><br><input type='range' min='0' max='255' value='${p.val}' onchange='setDac(${p.pin},this.value)'></div>`; }"
-        "    card.innerHTML=html; grid.appendChild(card);"
-        "  }); });}"
-        "setInterval(()=>{ refreshPins(); "
-        "  if(document.getElementById('tasks').classList.contains('active')){"
-        "    fetch('/api/tasks').then(r=>r.json()).then(a=>{document.getElementById('tasks-body').innerHTML=a.map(t=>`<tr><td>${t.name}</td><td>${t.min_us}</td><td>${t.avg_us}</td><td>${t.max_us}</td></tr>`).join('');});"
-        "  }"
-        "},5000); refreshPins();" // initial load
-        "fetch('/api/config').then(r=>r.json()).then(c=>{document.getElementById('conf-info').innerHTML=`WiFi Station: <b>${c.ssid}</b><br>EPICS ASCII Port: <b>${c.tcp_port}</b>`;});"
-        "</script></body></html>";
-    httpd_resp_sendstr(req, html);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, (const char *)index_html_start, index_html_end - index_html_start);
     return ESP_OK;
 }
 
 /* ---- GET /api/status ---- */
 static esp_err_t status_get_handler(httpd_req_t *req) {
+    extern uint32_t app_get_cycle_ms(void);
     cJSON *root = cJSON_CreateObject();
     cJSON_AddNumberToObject(root, "uptime_ms",  (double)monitor_get_uptime_ms());
     cJSON_AddNumberToObject(root, "free_heap",  (double)monitor_get_free_heap());
     cJSON_AddStringToObject(root, "version",    "1.1.0");
+    cJSON_AddNumberToObject(root, "cycle_ms",   (double)app_get_cycle_ms());
     send_json(req, root);
     return ESP_OK;
 }
@@ -390,6 +300,31 @@ static esp_err_t sys_config_post_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
+/* ---- POST /api/cycle ---- */
+static esp_err_t cycle_post_handler(httpd_req_t *req) {
+    char buf[64] = {0};
+    int  len = req->content_len < (int)sizeof(buf) - 1 ? req->content_len : (int)sizeof(buf) - 1;
+    if (httpd_req_recv(req, buf, len) <= 0) return ESP_FAIL;
+    cJSON *body = cJSON_Parse(buf);
+    if (!body) return ESP_FAIL;
+    cJSON *jms = cJSON_GetObjectItem(body, "ms");
+    if (jms && jms->valueint > 0) {
+        protocol_cmd_t cmd = {
+            .device = DEVICE_SYS,
+            .action = ACTION_CYCLE,
+            .value  = jms->valueint,
+            .response_fd = -1
+        };
+        xQueueSend(s_cmd_queue, &cmd, 0);
+        UTILS_LOGI(TAG, "WebUI set cycle: %d ms", jms->valueint);
+    }
+    cJSON_Delete(body);
+    cJSON *resp = cJSON_CreateObject();
+    cJSON_AddStringToObject(resp, "status", "ok");
+    send_json(req, resp);
+    return ESP_OK;
+}
+
 
 /* ---- URI table ---- */
 static const httpd_uri_t uris[] = {
@@ -404,14 +339,17 @@ static const httpd_uri_t uris[] = {
     { .uri = "/api/config/sys",.method = HTTP_POST, .handler = sys_config_post_handler,.user_ctx = NULL },
     { .uri = "/api/gpio",    .method = HTTP_POST, .handler = gpio_post_handler,  .user_ctx = NULL },
     { .uri = "/api/config",  .method = HTTP_GET,  .handler = config_get_handler, .user_ctx = NULL },
+    { .uri = "/api/cycle",   .method = HTTP_POST, .handler = cycle_post_handler, .user_ctx = NULL },
 };
 
 
 void webui_init(QueueHandle_t cmd_queue) {
     s_cmd_queue = cmd_queue;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.server_port   = WEBUI_PORT;
-    config.max_uri_handlers = 16; // Increased to accommodate all API endpoints
+    config.server_port      = WEBUI_PORT;
+    config.max_uri_handlers = 16;
+    config.stack_size       = 8192; // Increased for complex JSON processing
+    config.max_open_sockets = 7;    // Increased to handle simultaneous polling
 
     UTILS_LOGI(TAG, "Starting server on port %d", config.server_port);
     if (httpd_start(&s_server, &config) == ESP_OK) {

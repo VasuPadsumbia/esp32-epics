@@ -1,4 +1,4 @@
-/* * Data converted from /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 #if !defined (__APPLE__) && !defined (__linux__)

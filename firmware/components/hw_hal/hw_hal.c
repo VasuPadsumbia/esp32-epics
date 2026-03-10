@@ -78,16 +78,20 @@ void hw_hal_pin_cfg(uint8_t pin, pin_role_t role) {
 }
 
 void hw_hal_gpio_init_output(uint8_t pin) {
+    if (pin >= 40) return;
     gpio_reset_pin(pin);
     gpio_set_direction(pin, GPIO_MODE_INPUT_OUTPUT);
     gpio_set_level(pin, 0);
     s_output_shadow &= ~(1ULL << pin);
+    s_pin_roles[pin] = PIN_ROLE_GPIO_OUT;
 }
 
 void hw_hal_gpio_init_input(uint8_t pin) {
+    if (pin >= 40) return;
     gpio_reset_pin(pin);
     gpio_set_direction(pin, GPIO_MODE_INPUT);
     gpio_pullup_en(pin);
+    s_pin_roles[pin] = PIN_ROLE_GPIO_IN;
 }
 
 void hw_hal_gpio_set(uint8_t pin, bool level) {
@@ -97,6 +101,11 @@ void hw_hal_gpio_set(uint8_t pin, bool level) {
 }
 
 bool hw_hal_gpio_get(uint8_t pin) {
+    if (pin >= 40) return false;
+    /* For output pins, read from shadow to ensure consistency */
+    if (s_pin_roles[pin] == PIN_ROLE_GPIO_OUT) {
+        return (s_output_shadow & (1ULL << pin)) != 0;
+    }
     return (bool)gpio_get_level((gpio_num_t)pin);
 }
 
@@ -185,11 +194,20 @@ uint32_t hw_hal_adc_read_mv(uint8_t pin) {
 /* --- DAC --- */
 void hw_hal_dac_init(uint8_t pin) {
     int dac_chan = (pin == 25) ? 0 : (pin == 26 ? 1 : -1);
-    if (dac_chan == -1) return;
+    if (dac_chan == -1) {
+        ESP_LOGE("HAL", "Pin %d does not support DAC", pin);
+        return;
+    }
     if (s_dac_handles[dac_chan] == NULL) {
         dac_oneshot_config_t cfg = { .chan_id = (pin == 25 ? DAC_CHAN_0 : DAC_CHAN_1) };
-        dac_oneshot_new_channel(&cfg, &s_dac_handles[dac_chan]);
+        esp_err_t err = dac_oneshot_new_channel(&cfg, &s_dac_handles[dac_chan]);
+        if (err != ESP_OK) {
+            ESP_LOGE("HAL", "DAC init failed for pin %d: %s", pin, esp_err_to_name(err));
+        } else {
+            ESP_LOGI("HAL", "DAC init OK for pin %d", pin);
+        }
     }
+
 }
 
 void hw_hal_dac_set_voltage(uint8_t pin, uint8_t value) {

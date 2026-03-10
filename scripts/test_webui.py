@@ -66,7 +66,7 @@ def main():
         ("GET", "/"),
         ("GET", "/api/status"),
         ("GET", "/api/tasks"),
-        ("GET", "/api/gpio"),
+        ("GET", "/api/gpio/schema"),       # GET pin schema (not /api/gpio which is POST-only)
         ("POST", "/api/gpio", {"pin": 2, "value": 1}),
         ("GET", "/api/config"),
     ]

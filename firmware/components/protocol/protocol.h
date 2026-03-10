@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 #define PROTOCOL_FIELD_LEN  16
-#define PROTOCOL_QUEUE_DEPTH 8
+#define PROTOCOL_QUEUE_DEPTH 32
 
 /** @brief Known device identifiers. */
 typedef enum {

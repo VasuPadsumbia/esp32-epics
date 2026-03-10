@@ -1,4 +1,4 @@
-# Install script for directory: /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/components/webui
+# Install script for directory: /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/components/webui
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

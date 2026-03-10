@@ -1943,6 +1943,16 @@ rule C_STATIC_LIBRARY_LINKER____idf_comms_
 
 
 #############################################
+# Rule for compiling ASM files.
+
+rule ASM_COMPILER____idf_webui_unscanned_
+  depfile = $DEP_FILE
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}/home/vasu-hdd/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20251107/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building ASM object $out
+
+
+#############################################
 # Rule for compiling C files.
 
 rule C_COMPILER____idf_webui_unscanned_
@@ -1984,7 +1994,7 @@ rule C_STATIC_LIBRARY_LINKER____idf_main_
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake --regenerate-during-build -S/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware -B/home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build
+  command = /usr/bin/cmake --regenerate-during-build -S/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware -B/home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build
   description = Re-running CMake...
   generator = 1
 

@@ -22,4 +22,4 @@ set confirm off
 set confirm on
 
 # Load application symbols
-file /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/bootloader/bootloader.elf
+file /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader/bootloader.elf
