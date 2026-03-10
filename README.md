@@ -1,235 +1,167 @@
-# esp32-epics
+# ESP32 EPICS Integration
 
-EPICS IOC + ESP32 firmware project.
+A professional-grade integration between an **ESP32 WROOM 32U** microcontroller and an **EPICS IOC**, communicating over both UART and **WiFi TCP** using a custom ASCII protocol.
 
-This repository contains:
-
-- An EPICS IOC called `espCmd` that talks to an ESP32 over USB serial using **asyn** + **StreamDevice**.
-- An ESP-IDF firmware project (under `esp32/`) that implements a simple text command protocol.
-- A small, modular Channel Access C++ client:
-	- `caClientLib/` (reusable library)
-	- `caClientApp/` (CLI tool `caClient`)
-
-The goal is a clean EPICS PV interface (no “type raw commands into one PV” requirement), while still allowing firmware-like convenience commands when needed.
+[![Firmware Build](https://github.com/actions/workflows/badge.svg)](.github/workflows/firmware.yml)
+[![IOC Build](https://github.com/actions/workflows/badge.svg)](.github/workflows/epics.yml)
 
 ---
 
-## Requirements
+## Features
 
-Host-side EPICS build requires:
-
-- EPICS Base (tested with EPICS R7)
-- asyn
-- StreamDevice
-- calc
-
-Firmware (optional) requires:
-
-- ESP-IDF installed (use your normal ESP-IDF workflow)
+- 🔌 **Dual transport** — UART (USB) and WiFi TCP on the same protocol
+- 🎛️ **Universal Pin Configuration** — assign roles (ADC, PWM, DAC, I2C, UART, GPIO) to any pin live
+- 💾 **Persistent Settings** — pin roles and configurations are saved to NVS and restored on boot
+- 📊 **Task timing telemetry** — real-time FreeRTOS cycle stats for APP / UART / TCP tasks
+- 🚀 **Advanced Peripherals** — 28 PWM pins, all 15 ADC channels, and 2 DAC outputs supported
+- 🌐 **Embedded Web UI** — glassmorphism dashboard at `http://<ESP32_IP>/` with dynamic pin config
+- ⚙️ **Single config file** — `project.conf` drives firmware, IOC, and test scripts
 
 ---
 
-## Quick Start (clone → build → run IOC)
+## Quick Start
 
-### 1) Configure EPICS paths (local-only)
+```bash
+# 1. Fill in your settings (WiFi, serial port, EPICS paths)
+vim project.conf
 
-This repo intentionally does **not** commit your machine-specific absolute paths.
+# 2. Generate derived configs
+make gen-config
 
-Copy the example file and edit it:
+# 3. Build everything
+make all
 
-```sh
-cp configure/RELEASE.local.example configure/RELEASE.local
+# 4. Flash the ESP32
+make fw-flash
+
+# 5. Watch serial monitor for "Got IP: 192.168.x.x", then update project.conf
+make fw-monitor
+
+# 6. Run the EPICS IOC
+make ioc-run
+
+# 7. Verify everything
+make verify
 ```
 
-Edit `configure/RELEASE.local` and set absolute paths for:
-
-- `EPICS_BASE`
-- `ASYN`
-- `STREAMDEVICE`
-- `CALCSUPPORT`
-
-Notes:
-
-- `configure/RELEASE` includes `configure/RELEASE.local` when present.
-- `configure/RELEASE.local` is ignored by git (`/configure/*.local`).
-- EPICS `convertRelease.pl` (checkRelease) expects `EPICS_BASE` to be a literal absolute path.
-
-### 2) Build everything
-
-```sh
-make -j
-```
-
-### 3) Run the IOC
-
-The IOC boot directory is `iocBoot/iocespCmd/`.
-
-```sh
-cd iocBoot/iocespCmd
-../../bin/$EPICS_HOST_ARCH/espCmd st.cmd
-```
-
-If `EPICS_HOST_ARCH` isn’t set in your shell, you can usually run the binary directly by path (e.g. `../../bin/linux-x86_64/espCmd st.cmd`).
-
-#### Serial device
-
-By default the IOC uses:
-
-- Linux device: `/dev/ttyACM0`
-- asyn port name: `vasu-usb`
-
-Change these in `iocBoot/iocespCmd/st.cmd` if your device path differs.
+> ⚠️ **WiFi note**: The ESP32 only supports **2.4 GHz** WPA2 networks. 5 GHz networks will silently fail.
 
 ---
 
-## EPICS PV Interface
+## Project Layout
 
-All records in this IOC use prefix `ESP:` (see `dbLoadRecords(..., "P=ESP:")` in `st.cmd`).
-
-### Identity / firmware info
-
-- `ESP:id` (stringin)
-- `ESP:version` (stringin)
-- `ESP:num_ai` (longin)
-- `ESP:num_bin` (longin)
-
-These are `SCAN=Passive` but some use `PINI=YES`, so you will see a few reads during IOC startup.
-
-### Analog inputs
-
-- Raw analog reads: `ESP:ai0`, `ESP:ai1`, `ESP:ai2`
-- Mean values: `ESP:ai0:mean`, `ESP:ai1:mean`, `ESP:ai2:mean`, `ESP:ai3:mean`
-- Mean accumulation enable: `ESP:ai0:watch` … `ESP:ai3:watch`
-
-All are `SCAN=Passive` (read when processed / requested by records that process).
-
-### Rate / timing / multiplier
-
-- `ESP:rate` (ai)
-- Period setpoint (seconds): `ESP:period` (ao)
-- Period readback (us): `ESP:period_us` (longin)
-- Period readback (seconds): `ESP:period:rb` (calc)
-- Period limits (us): `ESP:period_min_us`, `ESP:period_max_us`
-
-- Multiplier setpoint: `ESP:multiplier` (longout)
-- Multiplier readback: `ESP:multiplier:rb` (longin)
-- Multiplier limits: `ESP:multiplier_min`, `ESP:multiplier_max`
-
-### PWM / LED
-
-- `ESP:pwm11` (ao)
-- `ESP:led` (bo) — onboard LED (GPIO8)
-
----
-
-## GPIO control
-
-There are two supported styles.
-
-### Style A (recommended): per-pin PVs
-
-For each GPIO pin `N` (generated from a template):
-
-- `ESP:gpioN:dir` (bo) — 0=input, 1=output
-- `ESP:gpioN:out` (bo) — drive low/high
-- `ESP:gpioN:in`  (bi) — read low/high
-
-Important behavior:
-
-- `ESP:gpioN:in` is `SCAN=Passive` (no background polling).
-- To force a fresh read from hardware, process the record:
-
-```sh
-caput ESP:gpio15:in.PROC 1
-caget ESP:gpio15:in
 ```
-
-### Style B (firmware-like): general command PVs
-
-Because Channel Access writes can only send one value to one PV, the “two argument” commands are implemented as string PVs.
-
-- `ESP:pin` (stringout) — writes `!pin <gpio> <0|1>`
-- `ESP:bo`  (stringout) — writes `!bo  <gpio> <0|1>`
-
-Examples:
-
-```sh
-caput -S ESP:pin "15 1"   # GPIO15 output
-caput -S ESP:pin "15 0"   # GPIO15 input
-caput -S ESP:bo  "15 1"   # GPIO15 high
-caput -S ESP:bo  "15 0"   # GPIO15 low
+epics_esp32_project/
+├── project.conf                    # ← Edit this first
+├── Makefile                        # fw-build, fw-flash, ioc-run, verify, ...
+├── scripts/
+│   ├── gen_config.py               # generates RELEASE + sdkconfig.defaults
+│   ├── test_tcp.py                 # TCP socket test suite (10 tests)
+│   ├── test_webui.py               # HTTP endpoint test suite (6 tests)
+│   └── verify_system.py            # end-to-end IOC + PV verification
+├── firmware/
+│   ├── main/
+│   │   ├── main.c                  # app entry point, task dispatch
+│   │   └── Kconfig.projbuild       # exposes CONFIG_PROJECT_* symbols to ESP-IDF
+│   ├── components/
+│   │   ├── hw_hal/                 # GPIO abstraction + output shadow register
+│   │   ├── comms/                  # UART + WiFi TCP transports
+│   │   ├── protocol/               # ASCII command parser → FreeRTOS queue
+│   │   ├── monitor/                # µs-resolution task timing
+│   │   ├── webui/                  # HTTP server + REST API + SPA dashboard
+│   │   └── utils/                  # logging macros
+│   └── docs/
+│       └── components.md           # per-component API reference
+├── epics_ioc/
+│   ├── esp32App/Db/
+│   │   ├── esp32.db                # all EPICS records
+│   │   └── esp32.proto             # StreamDevice ASCII protocol mapping
+│   ├── iocBoot/iocesp32/
+│   │   ├── st.cmd                  # IOC startup (WiFi TCP transport)
+│   │   └── env_project.cmd         # auto-generated env vars
+│   └── docs/
+│       └── pvs.md                  # full PV table with units
+├── docs/
+│   ├── architecture.md             # system diagram, component roles, data flow
+│   ├── user_guide.md               # build targets, PV usage, Web UI, troubleshooting
+│   ├── installation.md             # step-by-step ESP-IDF + EPICS setup
+│   └── requirements.md             # hardware/software version matrix
+└── logs/                           # test output (gitignored)
+    ├── test_tcp_final.log
+    ├── test_webui_final.log
+    └── verification_test.log
 ```
 
 ---
 
-## Channel Access client (caClient)
+## Key EPICS PVs
 
-This repo builds a small CLI client `caClient` plus a reusable library `caClientLib`.
+| PV | Description |
+|---|---|
+| `ESP32:LED` | Set LED on/off |
+| `ESP32:LED:RBV` | Read current LED state |
+| `ESP32:DAC:PIN25` | Set DAC output voltage (0-255) |
+| `ESP32:PIN13:ROLE` | Set Role for Pin 13 (ADC, PWM, etc.) |
+| `ESP32:AI:PIN34` | Read Analog Input (mV) |
+| `ESP32:SYS:UPTIME` | Uptime in seconds |
+| `ESP32:SYS:HEAP` | Free heap bytes |
+| `ESP32:SYS:VERSION` | Firmware version string |
+| `ESP32:TASK:APP:AVG` | `app_task` average cycle time (µs) |
 
-### Helper script
-
-Use `run.sh` from the repo root:
-
-```sh
-./run.sh build
-./run.sh rebuild
-./run.sh client --help
+```bash
+caput ESP32:LED 1
+caget ESP32:SYS:UPTIME
+caget ESP32:TASK:APP:MAX
 ```
 
-Notes:
-
-- `./run.sh client ...` never builds; it only runs an already-built `caClient`.
-- If `caClient` is missing, run `./run.sh build` (or `./run.sh rebuild`).
-
-### Examples
-
-```sh
-./run.sh client get led
-./run.sh client put led 1
-
-./run.sh client get ai0:mean
-./run.sh client monitor ai0:mean --duration 5
-
-./run.sh client get period
-./run.sh client put period 0.50
-```
-
-If you need to point CA at a non-local IOC, use standard EPICS CA environment variables such as `EPICS_CA_ADDR_LIST` and `EPICS_CA_AUTO_ADDR_LIST`.
+See [`epics_ioc/docs/pvs.md`](epics_ioc/docs/pvs.md) for the full PV table.
 
 ---
 
-## Repository Structure
+## Web UI & REST API
 
-Key folders:
+Open `http://<ESP32_IP>/` in a browser. Auto-refreshes every second.
 
-- `espCmdApp/`
-	- `Db/` EPICS database files (`espCmd.db`, plus templates/substitutions)
-	- `protocol/` StreamDevice protocol (`cmd_response.proto`)
-	- `src/` IOC application source
-- `iocBoot/iocespCmd/`
-	- `st.cmd` IOC startup script
-	- `envPaths` runtime environment (`TOP`, `EPICS_BASE`, etc.)
-- `caClientLib/` reusable C++ CA client library
-- `caClientApp/` CLI CA client application
-- `esp32/` ESP-IDF firmware project
-
-Build outputs:
-
-- `bin/$EPICS_HOST_ARCH/` built host binaries
-- `lib/$EPICS_HOST_ARCH/` built host libraries
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/status` | GET | `{uptime_ms, free_heap, version}` |
+| `/api/tasks` | GET | Task timing array |
+| `/api/gpio/schema`| GET | Pin capability & current role map for all 40 GPIOs |
+| `/api/pin/cfg` | POST | Set pin role & persist to NVS |
+| `/api/pwm` | POST | Set PWM duty cycle |
+| `/api/dac` | POST | Set DAC output voltage |
+| `/api/config` | GET | WiFi SSID, port config |
 
 ---
 
-## Troubleshooting
+## Make Targets
 
-### GPIO template load fails (gpio.template not found)
+| Command | Action |
+|---|---|
+| `make gen-config` | Regenerate EPICS RELEASE + firmware sdkconfig.defaults |
+| `make all` | Build firmware + IOC |
+| `make fw-flash` | Flash ESP32 |
+| `make fw-monitor` | Serial monitor (find IP address here) |
+| `make ioc-run` | Start EPICS IOC |
+| `make verify` | End-to-end PV verification |
+| `make clean` | Clean all build artifacts |
 
-The GPIO PVs are generated by loading `gpio.substitutions`, which references `file "gpio.template"`.
-The IOC startup script handles this by `cd`’ing into `espCmdApp/Db` before `dbLoadTemplate`.
+---
 
-### "Why is the device printing output continuously?"
+## Test Results
 
-- If you enable asyn/StreamDevice trace in `st.cmd`, you will see serial I/O whenever records process.
-- GPIO inputs are configured `SCAN=Passive` so they should not poll continuously.
-- Some PVs use `PINI=YES` which triggers a few reads at IOC startup.
+| Suite | Result |
+|---|---|
+| `scripts/test_tcp.py` (10 tests) | ✅ **10 / 10 PASS** |
+| `scripts/test_webui.py` (6 tests) | ✅ **6 / 6 PASS** |
 
+---
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — system diagram, component overview, protocol
+- [User Guide](docs/user_guide.md) — PV usage, Web UI, troubleshooting
+- [Installation](docs/installation.md) — step-by-step setup
+- [Requirements](docs/requirements.md) — hardware/software versions
+- [Firmware Components](firmware/docs/components.md) — per-component API reference
+- [EPICS PVs](epics_ioc/docs/pvs.md) — full PV table with units

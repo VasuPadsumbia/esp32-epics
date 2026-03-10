@@ -1,0 +1,2 @@
+source /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/gdbinit/symbols
+source /home/vasu-hdd/ESP-EPICS/epics_esp32_project/firmware/build/gdbinit/connect

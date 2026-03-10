@@ -1,0 +1,7 @@
+{
+  "idf.currentSetup": "/home/vasu-hdd/.espressif/v5.5.3/esp-idf",
+  "idf.port": "/dev/ttyACM0",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32"
+  }
+}

@@ -1,0 +1,88 @@
+name: EPICS IOC Build
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "epics_ioc/**"
+  pull_request:
+    paths:
+      - "epics_ioc/**"
+
+jobs:
+  build:
+    name: Build EPICS IOC
+    runs-on: ubuntu-latest
+
+    env:
+      EPICS_BASE_VER: "7.0.8.1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache EPICS Base
+        uses: actions/cache@v4
+        with:
+          path: ~/epics/base-${{ env.EPICS_BASE_VER }}
+          key: epics-base-${{ env.EPICS_BASE_VER }}-${{ runner.os }}
+
+      - name: Cache asyn
+        uses: actions/cache@v4
+        with:
+          path: ~/epics/support/asyn
+          key: epics-asyn-${{ runner.os }}
+
+      - name: Cache StreamDevice
+        uses: actions/cache@v4
+        with:
+          path: ~/epics/support/stream
+          key: epics-stream-${{ runner.os }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y build-essential libreadline-dev perl
+
+      - name: Build EPICS Base
+        run: |
+          if [ ! -f ~/epics/base-${EPICS_BASE_VER}/bin/linux-x86_64/softIoc ]; then
+            mkdir -p ~/epics
+            curl -L "https://epics.anl.gov/download/base/base-${EPICS_BASE_VER}.tar.gz" | tar -xz -C ~/epics
+            make -s -C ~/epics/base-${EPICS_BASE_VER}
+          fi
+          echo "EPICS_BASE=$HOME/epics/base-${EPICS_BASE_VER}" >> $GITHUB_ENV
+          echo "$HOME/epics/base-${EPICS_BASE_VER}/bin/linux-x86_64" >> $GITHUB_PATH
+
+      - name: Build asyn
+        run: |
+          if [ ! -d ~/epics/support/asyn ]; then
+            git clone --depth 1 https://github.com/epics-modules/asyn.git ~/epics/support/asyn
+          fi
+          echo "EPICS_BASE=${{ env.EPICS_BASE }}" > ~/epics/support/asyn/configure/RELEASE
+          echo "EPICS_BASE=${HOME}/epics/base-${EPICS_BASE_VER}" >> ~/epics/support/asyn/configure/RELEASE
+          make -s -C ~/epics/support/asyn
+
+      - name: Build StreamDevice
+        run: |
+          if [ ! -d ~/epics/support/stream/StreamDevice ]; then
+            git clone --depth 1 https://github.com/paulscherrerinstitute/StreamDevice.git ~/epics/support/stream/StreamDevice
+          fi
+          cat > ~/epics/support/stream/StreamDevice/configure/RELEASE <<EOF
+          SUPPORT=$HOME/epics/support
+          ASYN=$HOME/epics/support/asyn
+          EPICS_BASE=$HOME/epics/base-${EPICS_BASE_VER}
+          EOF
+          make -s -C ~/epics/support/stream/StreamDevice
+
+      - name: Configure EPICS IOC
+        run: |
+          cat > epics_ioc/configure/RELEASE <<EOF
+          SUPPORT=$HOME/epics/support
+          ASYN=$HOME/epics/support/asyn
+          STREAM=$HOME/epics/support/stream/StreamDevice
+          EPICS_BASE=$HOME/epics/base-${EPICS_BASE_VER}
+          EOF
+
+      - name: Build IOC
+        run: make -s -C epics_ioc

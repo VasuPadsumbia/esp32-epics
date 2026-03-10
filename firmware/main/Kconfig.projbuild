@@ -1,0 +1,33 @@
+menu "Project Configuration"
+
+    config PROJECT_WIFI_SSID
+        string "WiFi SSID"
+        default "your_ssid"
+        help
+            SSID (network name) for the ESP32 to connect to.
+
+    config PROJECT_WIFI_PASSWORD
+        string "WiFi Password"
+        default "your_password"
+        help
+            WPA2 password for the WiFi network.
+
+    config PROJECT_TCP_PORT
+        int "TCP Command Port"
+        default 7070
+        help
+            TCP port for handling incoming protocol commands.
+
+    config PROJECT_WEBUI_PORT
+        int "Web UI HTTP Port"
+        default 80
+        help
+            Port for the ESP32 HTTP Server.
+
+    config PROJECT_LED_GPIO
+        int "LED GPIO Pin"
+        default 2
+        help
+            GPIO pin connected to the indicator LED.
+
+endmenu

@@ -1,0 +1,56 @@
+name: Firmware Build (ESP-IDF)
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'firmware/**'
+  pull_request:
+    paths:
+      - 'firmware/**'
+
+jobs:
+  build:
+    name: Build ESP32 Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache ESP-IDF and toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.espressif
+            ~/esp-idf
+          key: esp-idf-5.5-${{ runner.os }}-${{ hashFiles('firmware/CMakeLists.txt') }}
+          restore-keys: esp-idf-5.5-${{ runner.os }}-
+
+      - name: Install ESP-IDF v5.5
+        run: |
+          git clone --depth 1 --branch v5.5 https://github.com/espressif/esp-idf.git ~/esp-idf
+          ~/esp-idf/install.sh esp32
+
+      - name: Build firmware (UART-only, WiFi disabled)
+        run: |
+          source ~/esp-idf/export.sh
+          idf.py set-target esp32
+          idf.py build
+        working-directory: firmware
+
+      - name: Upload firmware binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32-firmware-${{ github.sha }}
+          path: |
+            firmware/build/esp32_epics_firmware.bin
+            firmware/build/bootloader/bootloader.bin
+            firmware/build/partition_table/partition-table.bin
