@@ -16,7 +16,7 @@ jobs:
 
     env:
       EPICS_BASE_VER: "7.0.8.1"
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
       - name: Checkout repository
