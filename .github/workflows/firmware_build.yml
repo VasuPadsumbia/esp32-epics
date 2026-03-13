@@ -39,6 +39,7 @@ jobs:
           if [ ! -d ~/esp-idf ]; then
             git clone --depth 1 --branch v5.5 https://github.com/espressif/esp-idf.git ~/esp-idf
           fi
+          rm -rf ~/.espressif/python_env
           ~/esp-idf/install.sh esp32
 
       - name: Build firmware (UART-only, WiFi disabled)
