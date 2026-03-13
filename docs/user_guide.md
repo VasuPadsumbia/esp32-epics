@@ -70,6 +70,7 @@ caget ESP32:SYS:UPTIME     # uptime in seconds  (EGU: s)
 caget ESP32:SYS:HEAP       # free heap in bytes  (EGU: bytes)
 caget ESP32:SYS:VERSION    # firmware version string
 caget ESP32:SYS:STATUS     # uptime in milliseconds (EGU: ms)
+caget ESP32:SYS:CYCLE      # FreeRTOS app_task cycle count
 caput ESP32:SYS:RESET 1    # trigger firmware soft reset
 ```
 

@@ -40,7 +40,7 @@ Communication uses a custom open ASCII protocol over both UART (USB cable) and W
 | `protocol` | ASCII parser → `protocol_cmd_t` → FreeRTOS queue |
 | `comms` | UART listener + WiFi TCP server; credentials baked in at build time |
 | `monitor` | µs-resolution task cycle-time tracking via `esp_timer`; mutex-protected |
-| `webui` | `esp_http_server` dashboard + 5-endpoint REST JSON API |
+| `webui` | `esp_http_server` serving binary-embedded `index.html` dashboard + REST JSON API |
 
 ---
 
@@ -52,7 +52,7 @@ All commands and responses are ASCII, human-readable, and `\n`-terminated.
 
 | Category | Commands |
 |---|---|
-| System | `SYS:PING`, `SYS:STATUS`, `SYS:VERSION`, `SYS:HEAP`, `SYS:RESET` |
+| System | `SYS:PING`, `SYS:STATUS`, `SYS:CYCLE`, `SYS:VERSION`, `SYS:HEAP`, `SYS:RESET` |
 | LED | `LED:SET <0|1>`, `LED:GET` |
 | GPIO | `GPIO:SET <pin> <0|1>`, `GPIO:GET <pin>`, `GPIO:DIR <pin> <IN|OUT>` |
 | Task | `TASK:LIST`, `TASK:GET <name>`, `TASK:GETALL`, `TASK:RESET <name>` |
@@ -78,7 +78,7 @@ The embedded HTTP server on port 80 exposes:
 
 | Endpoint | Method | Response |
 |---|---|---|
-| `/` | GET | HTML dashboard SPA (1s auto-refresh) |
+| `/` | GET | `index.html` (embedded binary dashboard, 1s auto-refresh) |
 | `/api/status` | GET | `{uptime_ms, free_heap, version}` |
 | `/api/tasks` | GET | `[{name, min_us, max_us, avg_us}, ...]` |
 | `/api/gpio` | GET | `{pin, value}` |

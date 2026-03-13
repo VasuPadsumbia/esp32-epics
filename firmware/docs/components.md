@@ -83,7 +83,7 @@ Supports up to 8 named tasks. All accesses are mutex-protected.
 
 ## `webui` — HTTP Dashboard
 
-**Responsibility**: Embedded HTTP server (`esp_http_server`) serving a live dashboard SPA and a REST JSON API.
+**Responsibility**: Embedded HTTP server (`esp_http_server`) serving a binary-embedded `index.html` dashboard and a REST JSON API.
 
 | Endpoint | Method | Response |
 |---|---|---|

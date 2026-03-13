@@ -14,7 +14,7 @@ A professional-grade integration between an **ESP32 WROOM 32U** microcontroller 
 - 💾 **Persistent Settings** — pin roles and configurations are saved to NVS and restored on boot
 - 📊 **Task timing telemetry** — real-time FreeRTOS cycle stats for APP / UART / TCP tasks
 - 🚀 **Advanced Peripherals** — 28 PWM pins, all 15 ADC channels, and 2 DAC outputs supported
-- 🌐 **Embedded Web UI** — glassmorphism dashboard at `http://<ESP32_IP>/` with dynamic pin config
+- 🌐 **Embedded Web UI** — glassmorphism dashboard served from binary-embedded `index.html` with dynamic pin config
 - ⚙️ **Single config file** — `project.conf` drives firmware, IOC, and test scripts
 
 ---
@@ -68,7 +68,7 @@ epics_esp32_project/
 │   │   ├── comms/                  # UART + WiFi TCP transports
 │   │   ├── protocol/               # ASCII command parser → FreeRTOS queue
 │   │   ├── monitor/                # µs-resolution task timing
-│   │   ├── webui/                  # HTTP server + REST API + SPA dashboard
+│   │   ├── webui/                  # HTTP server + REST API + binary-embedded dashboard
 │   │   └── utils/                  # logging macros
 │   └── docs/
 │       └── components.md           # per-component API reference
@@ -106,6 +106,7 @@ epics_esp32_project/
 | `ESP32:SYS:UPTIME` | Uptime in seconds |
 | `ESP32:SYS:HEAP` | Free heap bytes |
 | `ESP32:SYS:VERSION` | Firmware version string |
+| `ESP32:SYS:CYCLE` | FreeRTOS app_task cycle count |
 | `ESP32:TASK:APP:AVG` | `app_task` average cycle time (µs) |
 
 ```bash
