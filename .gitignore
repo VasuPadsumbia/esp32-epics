@@ -23,6 +23,8 @@
 
 # Build directories
 O.*/
+build/
+firmware/build/
 
 # Common files created by other tools
 /QtC-*

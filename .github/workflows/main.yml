@@ -18,15 +18,15 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.espressif
-          key: ${{ runner.os }}-esp-idf
+          key: ${{ runner.os }}-esp-idf-v5.5
 
       - name: Build Firmware
         uses: espressif/esp-idf-ci-action@v1
         with:
-          esp_idf_version: v5.1
+          esp_idf_version: v5.5
           target: esp32
           path: 'firmware'
-          command: 'idf.py build'
+          command: 'idf.py fullclean build'
 
   lint-python:
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
       - name: Install EPICS Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libreadline-dev
+          sudo apt-get install -y build-essential libreadline-dev libtirpc-dev
       # Note: Building full EPICS in CI is slow, usually better to use a pre-built image or mock.
       # For now, we just verify the database syntax.
       - name: Verify DB syntax

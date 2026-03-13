@@ -1,2 +1,0 @@
-source /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader/gdbinit/symbols
-source /home/vasu-hdd/ESP-EPICS/esp32-epics/firmware/build/bootloader/gdbinit/connect
