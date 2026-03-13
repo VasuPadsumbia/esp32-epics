@@ -9,15 +9,15 @@ on:
     paths:
       - 'firmware/**'
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   build:
     name: Build ESP32 Firmware
     runs-on: ubuntu-latest
 
     steps:
+      - name: Force Node 24 for JavaScript Actions
+        run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
